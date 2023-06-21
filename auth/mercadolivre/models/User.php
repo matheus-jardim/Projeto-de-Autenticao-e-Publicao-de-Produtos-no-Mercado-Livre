@@ -1,11 +1,14 @@
 <?php
-date_default_timezone_set('America/Sao_Paulo'); //Mudar de acordo com o fuso horário
+
+date_default_timezone_set('America/Sao_Paulo');
+
 class User
 {
     private $user_id;
     private $access_token;
     private $refresh_token;
     private $expiration_time;
+    private $base;
 
     public function setUser_id($userId)
     {
@@ -44,12 +47,20 @@ class User
         return $this->expiration_time;
     }
 
-    // Verifica se o token está expirado ou próximo da expiração
+    public function setBase($base)
+    {
+        $this->base = $base;
+    }
+    public function getBase()
+    {
+        return $this->base;
+    }
+    
     public function isTokenExpired()
     {
         return (time() + 300) >= $this->expiration_time;
     }
-    // Função para sincronizar a conta
+    
     public function syncAccount($clientId, $redirectUri, $codeChallenge, $codeChallengeMethod, $state)
     {
         $authUrl = "https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=$clientId&redirect_uri=$redirectUri&code_challenge=$codeChallenge&code_challenge_method=$codeChallengeMethod&state=$state";
@@ -57,7 +68,7 @@ class User
         header("Location: $authUrl");
         exit;
     }
-    // Função para trocar o código de autorização por um novo access token
+    
     public function exchangeAuthorizationCode($clientId, $clientSecret, $authorizationCode, $redirectUri, $codeVerifier, $tokenUrl)
     {
         $data = [
@@ -87,14 +98,15 @@ class User
             $this->setRefresh_token($response->refresh_token);
             $this->setExpiration_time(time() + $response->expires_in);
         } catch (Exception $error) {
-            header('Location: http://localhost/grupoonline/auth/mercadolivre/auth.php');
+            header("Location: " . $this->getBase() . "/auth/mercadolivre/auth.php");
             exit;
         }
 
         return $response;
     }
 
-    public function refreshAccessToken($clientId, $clientSecret, $refresh_token, $tokenUrl) {
+    public function refreshAccessToken($clientId, $clientSecret, $refresh_token, $tokenUrl)
+    {
         $data = [
             'grant_type' => 'refresh_token',
             'client_id' => $clientId,
@@ -120,7 +132,7 @@ class User
             $this->setRefresh_token($response->refresh_token);
             $this->setExpiration_time(time() + $response->expires_in);
         } catch (Exception $error) {
-            header('Location: http://localhost/grupoonline/auth/mercadolivre/auth.php');
+            header("Location: " . $this->getBase() . "/auth/mercadolivre/auth.php");
             exit;
         }
 

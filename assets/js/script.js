@@ -1,23 +1,80 @@
-document.getElementById('productForm').addEventListener('submit', async (e)=>{
+document.getElementById('productForm').addEventListener('submit', (e) => {
     e.preventDefault();
+    document.getElementById('form_status').innerHTML = '';
 
-    let title = document.getElementById('title').value;
-    let category = document.getElementById('category').value;
-    let price = parseFloat(document.getElementById('price').value);
-    let stock = document.getElementById('stock').value;
+    let formData = new FormData(e.target);
 
-    let response = await fetch('/publish-product', {
-        method: 'POST',
-        body: JSON.stringify({title, category, price, stock}),
-        headers: {
-            'Content-Type': 'application/json'
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "form_action.php", true);
+    xhr.onload = () => {
+        if (xhr.status === 200 && (xhr.responseText !== 'Dados inválidos do formulário' && xhr.responseText !== 'Erro ao publicar o produto' && xhr.responseText !== 'Erro na chamada à API do Mercado Livre' && xhr.responseText !== "Por favor, preencha todos os campos obrigatórios.")) {
+            console.log(xhr.responseText);
+            document.getElementById('form_info').innerText = xhr.responseText;
+            document.getElementById('form-submit').style.display = 'none';
+            document.getElementById('new_form').style.display = 'block';
+        } else {
+            document.getElementById('form_info').innerText = 'Ocorreu um problema no envio. Tente novamente mais tarde!';
+            document.getElementById('form_status').innerHTML = `<h3>${xhr.responseText}</h3>`;
         }
-    });
-    let json = await response.json();
+    };
+    xhr.send(formData);
+    
+    document.getElementById('title').setAttribute('disabled', 'disabled');
+    document.getElementById('price').setAttribute('disabled', 'disabled');
+    document.getElementById('stock').setAttribute('disabled', 'disabled');
+    document.getElementById('category').setAttribute('disabled', 'disabled');
+})
 
-    if(json.status == true) {
-        document.getElementById(form_info).innerText = 'Produto publicado com sucesso!';
-    } else {
-        document.getElementById(form_info).innerText = 'Ocorreu um erro ao publicar o produto.';
+document.getElementById('title').addEventListener('input', (e) => {
+
+    if (e.target.value !== "") {
+        let title = encodeURIComponent(e.target.value);
+        let formData = new FormData();
+        formData.append('title', title);
+
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", 'form_category.php', true);
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                let dataCategories = JSON.parse(xhr.responseText);
+
+                let categorys = document.getElementById('category');
+                categorys.innerHTML = '';
+
+                if (dataCategories.length > 0) {
+                    console.log(dataCategories);
+
+                    for (let i in dataCategories) {
+                        let optionElement = document.createElement("option");
+
+                        optionElement.value = dataCategories[i]['category_id'];
+                        optionElement.text = dataCategories[i]['domain_name'];
+
+                        categorys.appendChild(optionElement);
+                    }
+                    let categoryNotFound = document.createElement("option");
+                    categoryNotFound.value = "NOTFOUND"
+                    categoryNotFound.text = "CATEGORIA NÃO ENCONTRADA";
+                    categorys.append(categoryNotFound)
+                }
+            }
+        }
+        xhr.send(formData);
     }
+})
+
+document.getElementById('new_form').addEventListener('click', (e) => {
+    document.getElementById('title').removeAttribute('disabled');
+    document.getElementById('price').removeAttribute('disabled');
+    document.getElementById('stock').removeAttribute('disabled');
+    document.getElementById('category').removeAttribute('disabled');
+
+    document.getElementById('title').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('stock').value = '';
+    document.getElementById('category').innerHTML = '<option value="TITULO" disabled selected>PREENCHA O TÍTULO PRIMEIRO</option>';  
+    
+    document.getElementById('new_form').style.display = 'none';
+    document.getElementById('form-submit').style.display = 'block';
+    document.getElementById('form_info').innerText = '';
 })

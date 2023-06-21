@@ -1,6 +1,8 @@
 <?php
 require_once('./models/User.php');
-date_default_timezone_set('America/Sao_Paulo'); //Mudar de acordo com o fuso horário
+
+date_default_timezone_set('America/Sao_Paulo');
+
 class UserDAOMysql implements UserDAO
 {
     private $pdo;
@@ -48,7 +50,7 @@ class UserDAOMysql implements UserDAO
         $sql->bindValue(':refresh_token', $u->getRefresh_token());
         $sql->bindValue(':expiration_time', date('Y-m-d H:i:s', $u->getExpiration_time()));
         $sql->bindValue(':user_id', $u->getUser_id());
-
         $sql->execute();
+        return true;
     }
 }

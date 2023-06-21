@@ -1,8 +1,6 @@
 <?php
 require_once('./challenge.php');
-
-$clientId = '691784791424209';
-$redirectUri = 'http://localhost/grupoonline/auth/mercadolivre/callback.php';
+require_once('../../config.php');
 
 $codeChallengeMethod = 'S256';
 

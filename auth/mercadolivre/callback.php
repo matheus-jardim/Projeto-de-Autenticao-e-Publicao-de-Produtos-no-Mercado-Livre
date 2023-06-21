@@ -1,64 +1,60 @@
 <?php
 session_start();
-require_once('./config.php');;
+require_once('../../config.php');
 require_once('./models/User.php');
 require_once('./models/UserDAOMysql.php');
 
-$tokenExpired = false;
-
-$clientId = '691784791424209';
-$clientSecret = 'HmrJNuI6rANtVdkVeZPntm0sLOexUzCz';
-$redirectUri = 'http://localhost/grupoonline/auth/mercadolivre/callback.php';
-
-
+// VERIFY STATE
 $state = $_GET['state'];
 
 if ($_SESSION['state'] !== $state) {
-    header('Location: http://localhost/grupoonline/auth/mercadolivre/auth.php');
+    header("Location: $base/auth/mercadolivre/auth.php");
     exit;
 }
 
 unset($_SESSION['state']);
+unset($_SESSION['access_token']);
 
 $tokenUrl = 'https://api.mercadolibre.com/oauth/token';
 
 $user = new User();
 $userDAO = new UserDAOMysql($pdo);
 
-// Verifica se o usuário está autenticado
-if (!$user->getAccess_token()) {   
+$user->setBase($base);
 
-    // Verifica se o código de autorização está presente
-    if(isset($_GET['code'])) {
+// VERIFY IF USER IS AUTHENTICATED
+if (!$user->getAccess_token()) {
+
+    // VERIFY IF AUTHRORIZATION CODE IS PRESENT
+    if (isset($_GET['code'])) {
         $authorizationCode = $_GET['code'];
-        $codeVerifier = $_SESSION['code_verifier']; // Recupera o code_verifier da sessão
-       
-        // Troca o código de autorização por um novo access token
+        $codeVerifier = $_SESSION['code_verifier']; 
+
+        // CHANGE THE AUTHRORIZATION CODE FOR A NEW ACCESS TOKEN
         $response = $user->exchangeAuthorizationCode($clientId, $clientSecret, $authorizationCode, $redirectUri, $codeVerifier, $tokenUrl);
-        
+
         if (!$userDAO->findByUserId($user->getUser_id())) {
-            $userDAO->add($user);      
+            $userDAO->add($user);
         } else {
             $userDAO->update($user);
         }
-
     } else {
         $user->syncAccount($clientId, $redirectUri, $_SESSION['code_challenge'], 'S256', $_SESSION['state']);
     }
-
 }
-echo ((time() + 300) >= $user->getExpiration_time())?'Expirou': 'Válido';
-echo '<br/>';
-echo (time() + 300);
-echo '<br/>';
-echo $user->getExpiration_time();
 
-// Verifica se o token está expirado ou próximo da expiração
-if ($user->isTokenExpired()) {    
-    // Renova o access token usando o refresh token
-    $response = $user->refreshAccessToken($clientId, $clientSecret, $user->getRefresh_token(),$tokenUrl);
-    
-    // Atualiza o usuário no banco de dados com o novo token
+
+// VERIFY IF TOKEN IS EXPIRING
+if ($user->isTokenExpired()) {
+    // RENEW ACCESS TOKEN USING REFRESH TOKEN
+    $response = $user->refreshAccessToken($clientId, $clientSecret, $user->getRefresh_token(), $tokenUrl);
+
+    // UPDATE USER IN DB WHITH NEW TOKEN
     $userDAO->update($user);
 }
 
+$_SESSION['access_token'] = $user->getAccess_token();
+$_SESSION['expire'] = $user->getExpiration_time();
+
+header("Location: $base");
+exit;
