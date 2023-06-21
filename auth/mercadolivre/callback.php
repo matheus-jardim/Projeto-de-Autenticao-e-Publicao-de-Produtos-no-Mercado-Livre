@@ -18,14 +18,14 @@ unset($_SESSION['access_token']);
 $tokenUrl = 'https://api.mercadolibre.com/oauth/token';
 
 $user = new User();
-$userDAO = new UserDAOMysql($pdo);
+$userDAO = new UserDAOMysql($pdo, $tableName);
 
 $user->setBase($base);
 
 // VERIFY IF USER IS AUTHENTICATED
 if (!$user->getAccess_token()) {
 
-    // VERIFY IF AUTHRORIZATION CODE IS PRESENT
+    // VERIFY IF AUTHORIZATION CODE IS PRESENT
     if (isset($_GET['code'])) {
         $authorizationCode = $_GET['code'];
         $codeVerifier = $_SESSION['code_verifier']; 
@@ -42,7 +42,6 @@ if (!$user->getAccess_token()) {
         $user->syncAccount($clientId, $redirectUri, $_SESSION['code_challenge'], 'S256', $_SESSION['state']);
     }
 }
-
 
 // VERIFY IF TOKEN IS EXPIRING
 if ($user->isTokenExpired()) {

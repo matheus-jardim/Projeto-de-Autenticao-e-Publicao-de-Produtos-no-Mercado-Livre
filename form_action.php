@@ -5,7 +5,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category = trim(filter_input(INPUT_POST, 'category', FILTER_SANITIZE_SPECIAL_CHARS));
     $price = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT);
     $stock = filter_input(INPUT_POST, 'stock', FILTER_VALIDATE_INT);
-
     
     if (!$title || !$category || !$price || !$stock) {
         echo "Por favor, preencha todos os campos obrigatórios.";        
@@ -80,12 +79,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $productId = $responseData['id'];
                 echo "Produto publicado com sucesso - ID do produto publicado: $productId";
             } else {
-                echo "Erro ao publicar o produto";
+                echo "Erro ao publicar o produto, é necessário mais especificações dos atributos do item.";
             }
         } else {
-            echo 'Erro na chamada à API do Mercado Livre';
+            echo 'Erro na chamada à API do Mercado Livre.';
         }
     } else {
-        echo "Dados inválidos do formulário";
+        echo "Dados inválidos do formulário.";
     }
 }

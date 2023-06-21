@@ -13,15 +13,15 @@ $pdo = new PDO("mysql:host=$db_host", $db_user, $db_pass);
 
 $db_name = 'grupoonline';
 
-// CREATE DB IF NOT EXISTS
+// CREATE DB IF IT DOESN'T EXIST
 $createDbQuery = "CREATE DATABASE IF NOT EXISTS $db_name";
 $pdo->exec($createDbQuery);
 
-// SELECT DB CREATED
+// SELECT THE DB CREATED
 $pdo->exec("USE $db_name");
 
 
-// TABLE NAME TO BE CREATED
+// TABLE NAME TO BE CREATED IF IT DOESN'T ALREADY EXIST
 $tableName = 'accounts';
 
 // VERIFY IF TABLE ALREADY EXISTS
@@ -30,7 +30,7 @@ $query = $pdo->prepare("SHOW TABLES LIKE '$tableName'");
 $query->execute();
 $tableExists = $query->rowCount() > 0;
 
-// CREATE TABLE IF DON'T EXISTS
+// CREATE TABLE IF DON'T EXIST
 if (!$tableExists) {
     $createTableQuery = "
     CREATE TABLE $tableName (

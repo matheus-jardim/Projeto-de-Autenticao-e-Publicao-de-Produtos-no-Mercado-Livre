@@ -7,11 +7,16 @@ document.getElementById('productForm').addEventListener('submit', (e) => {
     let xhr = new XMLHttpRequest();
     xhr.open("POST", "form_action.php", true);
     xhr.onload = () => {
-        if (xhr.status === 200 && (xhr.responseText !== 'Dados inválidos do formulário' && xhr.responseText !== 'Erro ao publicar o produto' && xhr.responseText !== 'Erro na chamada à API do Mercado Livre' && xhr.responseText !== "Por favor, preencha todos os campos obrigatórios.")) {
-            console.log(xhr.responseText);
+        if (xhr.status === 200 && (xhr.responseText !== 'Dados inválidos do formulário.' && xhr.responseText !== 'Erro ao publicar o produto, é necessário mais especificações dos atributos do item.' && xhr.responseText !== 'Erro na chamada à API do Mercado Livre.' && xhr.responseText !== "Por favor, preencha todos os campos obrigatórios.")) {
+            // console.log(xhr.responseText);    - USED ​​TO VERIFY ANSWER
             document.getElementById('form_info').innerText = xhr.responseText;
             document.getElementById('form-submit').style.display = 'none';
             document.getElementById('new_form').style.display = 'block';
+
+            document.getElementById('title').setAttribute('disabled', 'disabled');
+            document.getElementById('price').setAttribute('disabled', 'disabled');
+            document.getElementById('stock').setAttribute('disabled', 'disabled');
+            document.getElementById('category').setAttribute('disabled', 'disabled');
         } else {
             document.getElementById('form_info').innerText = 'Ocorreu um problema no envio. Tente novamente mais tarde!';
             document.getElementById('form_status').innerHTML = `<h3>${xhr.responseText}</h3>`;
@@ -19,10 +24,6 @@ document.getElementById('productForm').addEventListener('submit', (e) => {
     };
     xhr.send(formData);
     
-    document.getElementById('title').setAttribute('disabled', 'disabled');
-    document.getElementById('price').setAttribute('disabled', 'disabled');
-    document.getElementById('stock').setAttribute('disabled', 'disabled');
-    document.getElementById('category').setAttribute('disabled', 'disabled');
 })
 
 document.getElementById('title').addEventListener('input', (e) => {
@@ -42,8 +43,6 @@ document.getElementById('title').addEventListener('input', (e) => {
                 categorys.innerHTML = '';
 
                 if (dataCategories.length > 0) {
-                    console.log(dataCategories);
-
                     for (let i in dataCategories) {
                         let optionElement = document.createElement("option");
 
@@ -52,10 +51,6 @@ document.getElementById('title').addEventListener('input', (e) => {
 
                         categorys.appendChild(optionElement);
                     }
-                    let categoryNotFound = document.createElement("option");
-                    categoryNotFound.value = "NOTFOUND"
-                    categoryNotFound.text = "CATEGORIA NÃO ENCONTRADA";
-                    categorys.append(categoryNotFound)
                 }
             }
         }
